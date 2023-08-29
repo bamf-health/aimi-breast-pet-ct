@@ -1,0 +1,60 @@
+{
+    "ContentCreatorName": "BAMFHealth^AI",
+    "ClinicalTrialSeriesID": "Session1",
+    "ClinicalTrialTimePointID": "1",
+    "SeriesDescription": "Segmentation",
+    "SeriesNumber": "300",
+    "InstanceNumber": "1",
+    "BodyPartExamined": "BREAST",
+    "segmentAttributes": [
+      [
+        {
+          "labelID": 1,
+          "SegmentDescription": "Background",
+          "SegmentAlgorithmType": "AUTOMATIC",
+          "SegmentAlgorithmName": "BAMF-Breast-FDG-PET-CT",
+          "SegmentedPropertyCategoryCodeSequence": {
+            "CodeValue": "309825002",
+            "CodingSchemeDesignator": "SCT",
+            "CodeMeaning": "Spatial and Relational Concept"
+          },
+          "SegmentedPropertyTypeCodeSequence": {
+            "CodeValue": "125040",
+            "CodingSchemeDesignator": "DCM",
+            "CodeMeaning": "Background"
+          },
+          "recommendedDisplayRGBValue": [0, 0, 0]
+        },
+        {
+          "labelID": 2,
+          "SegmentDescription": "FDG-Avid Tumor",
+          "SegmentAlgorithmType": "AUTOMATIC",
+          "SegmentAlgorithmName": "BAMF-Breast-FDG-PET-CT",
+          "AnatomicRegionSequence": {
+            "CodeValue": "76752008",
+            "CodingSchemeDesignator": "SCT",
+            "CodeMeaning": "Breast"
+          },
+          "AnatomicRegionModifierSequence": {
+            "CodeValue": "51440002",
+            "CodingSchemeDesignator": "SCT",
+            "CodeMeaning": "Right and left"
+          },
+          "SegmentedPropertyCategoryCodeSequence": {
+            "CodeValue": "C35869",
+            "CodingSchemeDesignator": "NCIt",
+            "CodeMeaning": "Radiologic Finding"
+          },
+          "SegmentedPropertyTypeCodeSequence": {
+            "CodeValue": "C168968",
+            "CodingSchemeDesignator": "NCIt",
+            "CodeMeaning": "FDG-Avid Tumor"
+          },
+          "recommendedDisplayRGBValue": [174, 41, 14]
+        }
+      ]
+    ],
+    "ContentLabel": "SEGMENTATION",
+    "ContentDescription": "Image segmentation",
+    "ClinicalTrialCoordinatingCenterName": "dcmqi"
+  }

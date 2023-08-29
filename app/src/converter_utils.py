@@ -6,6 +6,8 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 import pydicom
 import SimpleITK as sitk
+import os
+# from fix_dicom import fix_dicom_dir
 
 
 class DicomToNiiConverter:
@@ -75,6 +77,102 @@ class DicomToNiiConverter:
             except:
                 return False
             return True
+
+
+class NiiToDicomConverter:
+    def __init__(self, dcmqi_package_path:str) -> None:
+        dcmqi_bin_path = os.path.join(dcmqi_package_path, "bin/itkimage2segimage")
+        self.itkimage2segimage_bin = (dcmqi_bin_path)
+
+    def _convert_nii_to_dcm(
+            self,
+            nii_path: Path,
+            dcm_ref_dir: Path,
+            dcm_out_file: Path,
+            dicom_seg_meta_json: Path,
+            add_background_label: bool = False,
+            ):
+        
+        assert dcm_ref_dir.exists(), dcm_ref_dir
+
+        dcm_out_file = Path(dcm_out_file)
+        dcm_out_file.parent.mkdir(parents=True, exist_ok=True)
+
+        if add_background_label:
+            # add background label, offset by 1
+            with TemporaryDirectory() as temp_dir:
+                temp_seg_file = Path(temp_dir) / "temp_seg.nii.gz"
+                img = sitk.ReadImage(str(nii_path))
+                img += 1
+                sitk.WriteImage(img, str(temp_seg_file))
+
+                args = [
+                    self.itkimage2segimage_bin,
+                    "--skip",
+                    "--inputImageList",
+                    str(temp_seg_file),
+                    "--inputDICOMDirectory",
+                    str(dcm_ref_dir),
+                    "--outputDICOM",
+                    str(dcm_out_file),
+                    "--inputMetadata",
+                    str(dicom_seg_meta_json),
+                ]
+
+                subprocess.run(args, check=True)
+        else:
+            args = [
+                self.itkimage2segimage_bin,
+                "--skip",
+                "--inputImageList",
+                str(nii_path),
+                "--inputDICOMDirectory",
+                str(dcm_ref_dir),
+                "--outputDICOM",
+                str(dcm_out_file),
+                "--inputMetadata",
+                str(dicom_seg_meta_json),
+            ]
+
+            print(" ".join(args))
+            subprocess.run(args, check=True)
+
+    def convert_nii_to_dcm(
+            self,
+            nii_path: Path,
+            dcm_ref_dir: Path,
+            dcm_out_file: Path,
+            dicom_seg_meta_json: Path,
+            add_background_label: bool = False
+            ):
+        
+        status = True
+        try:
+            self._convert_to_dicom_seg(
+                nii_path,
+                dcm_ref_dir,
+                dcm_out_file,
+                dicom_seg_meta_json,
+                add_background_label=add_background_label
+            )
+        except Exception as e:
+            status = False
+        return status
+    
+        if status:
+            return
+
+        # # fix the dicom files, and try again
+        # with TemporaryDirectory() as fixed_dcm_dir:
+        #     real_dcm_dir = fix_dicom_dir(dcm_ref_dir, Path(fixed_dcm_dir))
+        #     self._convert_to_dicom_seg(
+        #         nii_path,
+        #         real_dcm_dir,
+        #         dcm_out_file,
+        #         dicom_seg_meta_json,
+        #         add_background_label=add_background_label
+        #     )
+
 
 
 if __name__ == "__main__":

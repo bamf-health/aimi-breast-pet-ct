@@ -2,14 +2,14 @@ import yaml
 import argparse
 import os
 from pathlib import Path
-from converter_utils import DicomToNiiConverter
+from converter_utils import DicomToNiiConverter, NiiToDicomConverter
 from registration_utils import registration
 from bamf_nnunet_inference import BAMFnnUNetInference
 from breast_processor import DotDict
 from breast_processor import BreastPostProcessor
 from total_seg_utils import infer_total_segmentator, get_path
 from io_utils import copy_to_series_dir
-
+import shutil
 
 
 def load_config(config_path):
@@ -41,7 +41,6 @@ def run_nnunet(source_ct_dir, source_pt_dir, target_dir, output_seg_name, num_fo
 
     temp_folds_dir = "/tmp/folds"
     Path(temp_folds_dir).mkdir(parents=True, exist_ok=True)
-    temp_label_path = os.path.join(temp_folds_dir, output_seg_name)
 
     # Prepare config for nnUNet model
     WEIGHTS_FOLDER = os.environ["WEIGHTS_FOLDER"]
@@ -82,22 +81,34 @@ def run_nnunet(source_ct_dir, source_pt_dir, target_dir, output_seg_name, num_fo
 
     # ensemble and post process
     breast_post_processor = BreastPostProcessor()
-    processed_file_name = temp_label_path
-    processed_file_path = get_path(temp_folds_dir, processed_file_name)
+    out_file_path = get_path(temp_folds_dir, output_seg_name)
     breast_post_processor.postprocessing(
         save_path=temp_folds_dir,
         ct_path=temp_ct_path,
         total_seg_path=total_seg_out_path,
-        out_file_path=processed_file_path,
+        out_file_path=out_file_path,
         organ_name_prefix=organ_name_prefix,
         breast_label=breast_label
         )
 
-    # Finally copy the segmented label into a series_id folder
-    copy_to_series_dir(input_file=processed_file_path,
-                       dcm_dir=source_ct_dir,
-                       output_dir=target_dir
-                       )
+    # convert nii output back to dcm
+    dcmqi_package_path = os.environ["DCMQI_PACKAGE_PATH"]
+    converter = NiiToDicomConverter(dcmqi_package_path)
+    output_seg_name_dcm = output_seg_name.split('.')[0].strip() + ".dcm"
+    target_segmented_dcm_file = get_path(target_dir, output_seg_name_dcm)
+    success = converter.convert_nii_to_dcm(
+        nii_path=Path(out_file_path),
+        dcm_ref_dir=Path(source_ct_dir),
+        dcm_out_file=Path(target_segmented_dcm_file),
+        dicom_seg_meta_json=Path("dicom_seg_meta.json"),
+        add_background_label=False
+    )
+
+    # Safety check: If dicom conversion fails, ship the nii file
+    if not success:
+        target_segmented_nii_file = get_path(target_dir, output_seg_name)
+        shutil.copyfile(out_file_path, target_segmented_nii_file)
+    print("Execution complete!")
 
 
 if __name__ == "__main__":
