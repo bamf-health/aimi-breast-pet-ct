@@ -39,11 +39,6 @@ RUN pip install --user --no-cache-dir \
     scikit-build \
     pynrrd
 
-# specify cuda and nnunet specific environment variables
-ENV NVIDIA_VISIBLE_DEVICES all
-ENV NVIDIA_DRIVER_CAPABILITIES compute,utility
-ENV WEIGHTS_FOLDER=$WEIGHTS_DIR
-
 # Pull nnUNet model weights into the container
 ENV WEIGHTS_DIR=/root/.nnunet/nnUNet_models/nnUNet/
 RUN mkdir -p $WEIGHTS_DIR
@@ -53,6 +48,11 @@ ENV WEIGHTS_URL=https://zenodo.org/record/8290055/files/$WEIGHTS_FN
 RUN wget --directory-prefix ${WEIGHTS_DIR} ${WEIGHTS_URL} --no-check-certificate
 RUN unzip ${WEIGHTS_DIR}${WEIGHTS_FN} -d ${WEIGHTS_DIR}
 RUN rm ${WEIGHTS_DIR}${WEIGHTS_FN}
+
+# specify cuda and nnunet specific environment variables
+ENV NVIDIA_VISIBLE_DEVICES all
+ENV NVIDIA_DRIVER_CAPABILITIES compute,utility
+ENV WEIGHTS_FOLDER=$WEIGHTS_DIR
 
 # Install binaries for itkimage2segimage package
 ENV PACKAGE_DIR="/root/.local/bin/"
