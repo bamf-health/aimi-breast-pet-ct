@@ -10,5 +10,5 @@ modules:
     target_dir: output_data/
     output_seg_name: Seg_ensemble_primary.nii.gz
     num_folds: 5
-    breast_label: 9
+    organ_label: 9
 

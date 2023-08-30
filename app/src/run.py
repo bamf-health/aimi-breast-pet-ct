@@ -5,10 +5,9 @@ from pathlib import Path
 from converter_utils import DicomToNiiConverter, NiiToDicomConverter
 from registration_utils import registration
 from bamf_nnunet_inference import BAMFnnUNetInference
-from breast_processor import DotDict
 from breast_processor import BreastPostProcessor
 from total_seg_utils import infer_total_segmentator, get_path
-from io_utils import copy_to_series_dir
+from io_utils import DotDict
 import shutil
 
 
@@ -25,14 +24,14 @@ def _registration(pt_path, ct_path):
     return rct
     
 
-def run_nnunet(source_ct_dir, source_pt_dir, target_dir, output_seg_name, num_folds=5, breast_label=9):
+def run_nnunet(source_ct_dir, source_pt_dir, target_dir, output_seg_name, num_folds=5, organ_label=9):
     """
     Convert list of dcm files to a single nii.gz file
     :param: source_ct_dir - dir containing list of dcm files
     :param: source_pt_dir - dir containing list of dcm files    
     :param: target_dir - dir to write segmented dcm masks too
     :param: num_folds - number of folds the nnUNet model was trained for
-    :param: breast_label - label of breast segment in AIMI dataset    
+    :param: organ_label - label of breast segment in AIMI dataset
     """    
     temp_nii_dir = "/tmp/nii-input"
     Path(temp_nii_dir).mkdir(parents=True, exist_ok=True)
@@ -88,7 +87,7 @@ def run_nnunet(source_ct_dir, source_pt_dir, target_dir, output_seg_name, num_fo
         total_seg_path=total_seg_out_path,
         out_file_path=out_file_path,
         organ_name_prefix=organ_name_prefix,
-        breast_label=breast_label
+        breast_label=organ_label
         )
 
     # convert nii output back to dcm
@@ -130,8 +129,15 @@ if __name__ == "__main__":
     target_dir = nnunet_runner.get("target_dir")
     target_dir = os.path.join(data_base_dir, target_dir)    
     num_folds = int(nnunet_runner.get("num_folds"))
-    breast_label = int(nnunet_runner.get("breast_label"))
+    organ_label = int(nnunet_runner.get("organ_label"))
     output_seg_name = nnunet_runner.get("output_seg_name")
 
     # Run the model
-    run_nnunet(source_ct_dir, source_pt_dir, target_dir, output_seg_name, num_folds, breast_label)
+    run_nnunet(
+        source_ct_dir=source_ct_dir,
+        source_pt_dir=source_pt_dir,
+        target_dir=target_dir,
+        output_seg_name=output_seg_name,
+        num_folds=num_folds,
+        organ_label=organ_label
+    )

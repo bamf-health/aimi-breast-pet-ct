@@ -6,6 +6,11 @@ from pathlib import Path
 import pydicom
 
 
+class DotDict(dict):
+    def __getattr__(self, attr):
+        return self.get(attr)
+
+
 def copy_to_series_dir(input_file, dcm_dir, output_dir):
     series_uid = None
     try:
