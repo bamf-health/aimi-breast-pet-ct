@@ -16,3 +16,36 @@ Resources to create a container that runs nnUNet model inference on AIMI collect
   * `{output_dir}/seg_ensemble_primary.dcm` -- if nifti to dcm conversion is a success
   * `{output_dir}/seg_lesions_ensemble.nii.gz` -- if nifti to dcm conversion is a failure
 
+# Breast PET/CT Segmentation
+
+We used our FDG-PET/CT lesion segmentation model trained on [AutoPET 2023](https://autopet.grand-challenge.org/) dataset to segment lesions for each of the five folds and ensemble the lesion segments. We then used segmentations from [TotalSegmentator](https://github.com/wasserth/TotalSegmentator) to limit the predicted lesions to only those in the breast area.
+
+The [model_performance](model_performance.ipynb) notebook contains the code to evaluate the model performance on [QIN-Breast](https://wiki.cancerimagingarchive.net/display/Public/QIN-Breast) collection against a validation evaluated by a radiologist and a non-expert.
+
+## Running the model
+
+#TODO
+
+### Build container from pretrained weights
+
+#TODO
+
+### Running inference
+
+By default the container takes an input directory that contains DICOM files of PET/CT scans from the [QIN-Breast](https://wiki.cancerimagingarchive.net/display/Public/QIN-Breast) collections, and an output directory where DICOM-SEG files will be placed. To run on multiple scans, place DICOM files for each scan in a separate folder within the input directory. The output directory will have a folder for each input scan, with the DICOM-SEG file inside.
+
+example:
+
+#TODO
+
+There is an optional `--nifti` flag that will take nifti files as input and output.
+
+#### Run inference on IDC Collections
+
+This model was run on PET/CT scans from the [QIN-Breast](https://wiki.cancerimagingarchive.net/display/Public/QIN-Breast) collection. The AI segmentations and corrections by a radioloist for 10% of the dataset are available in the breast-fdg-pet-ct.zip file on the [zenodo record](https://zenodo.org/record/8352041)
+
+You can reproduce the results with the [run_on_idc_data](run_on_idc_data.ipynb) notebook on google colab.
+
+### Training your own weights
+
+Refer to the [training instructions](training.md) for more details. #TODO
