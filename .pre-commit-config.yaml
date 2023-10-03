@@ -23,4 +23,11 @@ repos:
       - id: mypy
         args: ["--implicit-optional"]
         additional_dependencies:
-          [numpy, pydicom, SimpleITK, types-requests, segmentationmetrics]
+          [
+            numpy,
+            pydicom,
+            SimpleITK,
+            types-requests,
+            segmentationmetrics,
+            matplotlib,
+          ]
